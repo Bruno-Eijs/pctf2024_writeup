@@ -36,7 +36,7 @@ which should give output including `Unpacked 1 file`.
 
 We load the ELF into Ghidra and get some pretty nicely formatted C code with a `main()` function. The reason it comes out this nice is because the binary was not stripped.
 
-IMAGE 1
+![image](img1.png)
 
 ### Step 3: Understanding the encryption program
 
@@ -53,17 +53,19 @@ The second [`EVP_aes_256_cfb128()`](https://docs.openssl.org/master/man3/EVP_aes
 We'll look a bit more closely at the third ['EVP_EncryptInit_ex()'](https://docs.openssl.org/master/man3/EVP_EncryptInit/#description), since it will tell us more about the role of some of the local variables. 
 
 The synopsis declares this function as follows:
-```
+```C
 int EVP_EncryptInit_ex(EVP_CIPHER_CTX *ctx, const EVP_CIPHER *type, ENGINE *impl, const unsigned char *key, const unsigned char *iv);
 ```
 The last two arguments are called `key` and `iv`, which are the *encryption key* and *initialization vector* respectively. We then rename these arguments in Ghidra accordingly to see more clearly what values these are.
 
-IMAGE 2, IMAGE 3
+|                  |                  |
+|------------------|------------------|
+|![image](img2.png)|![image](img3.png)|
 
 The decompiled code in the above image shows a bunch of 8-byte values, but we should note that `EVP_EncryptInit_ex()` does not use them like this. Instead it takes `key` and `iv` as pointers to `unsigned char` arrays. These local variables are all bunched up together on the stack so they become part of the arrays. When we write out decryption program we will define the array properly.
 
 Finally, have a look at [`EVP_EncryptUpdate()`](https://docs.openssl.org/1.1.1/man3/EVP_EncryptInit/#description) which is declared as:
-```
+```C
 int EVP_EncryptUpdate(EVP_CIPHER_CTX *ctx, unsigned char *out, int *outl, const unsigned char *in, int inl);
 ```
 This function performs the encryption, taking blocks of size `inl` at a time from `in`. So `in` points to a buffer for the unencrypted data (that we'll rename `flag_buf`). The encrypted data is stored in `out` (rename `enc_buf`) and its size is pointed to by `outl`. (Note that `inl` and `*outl` don't have to have the same value.)
@@ -72,7 +74,7 @@ The last two `EVP_` functions add padding to the ciphertext and free up the allo
 
 After some more renaming we have a nice template for reversing the decryption program.
 
-Img 4
+![image](img4.png)
 
 ### Step 4: Decrypting the flag
 
@@ -90,7 +92,7 @@ Don't forget:
 - to get the correct byte order for the `iv` and `key` arrays
 
 The following program will do the trick.
-```
+```C
 #include <stdio.h>
 #include <openssl/evp.h>
 
