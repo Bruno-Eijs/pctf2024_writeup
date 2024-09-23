@@ -22,7 +22,7 @@ which also tells us which packer has been used (UPX)
 ```
 Info: This file is packed with the UPX executable packer http://upx.sf.net 
 ```
-UPX releases can be found on [https://github.com/upx/upx](https://github.com/upx/upx)`.`
+UPX releases can be found on [https://github.com/upx/upx](https://github.com/upx/upx).
 
 Unpack as follows
 ```
@@ -36,7 +36,7 @@ which should give output including `Unpacked 1 file`.
 
 We load the ELF into Ghidra and get some pretty nicely formatted C code with a `main()` function. The reason it comes out this nice is because the binary was not stripped.
 
-![image](img1.png)
+![image](images/img1.png)
 
 ### Step 3: Understanding the encryption program
 
@@ -60,7 +60,7 @@ The last two arguments are called `key` and `iv`, which are the *encryption key*
 
 |                  |                  |
 |------------------|------------------|
-|![image](img2.png)|![image](img3.png)|
+|![image](images/img2.png)|![image](images/img3.png)|
 
 The decompiled code in the above image shows a bunch of 8-byte values, but we should note that `EVP_EncryptInit_ex()` does not use them like this. Instead it takes `key` and `iv` as pointers to `unsigned char` arrays. These local variables are all bunched up together on the stack so they become part of the arrays. When we write out decryption program we will define the array properly.
 
@@ -74,7 +74,7 @@ The last two `EVP_` functions add padding to the ciphertext and free up the allo
 
 After some more renaming we have a nice template for reversing the decryption program.
 
-![image](img4.png)
+![image](images/img4.png)
 
 ### Step 4: Decrypting the flag
 
